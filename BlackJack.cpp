@@ -23,6 +23,7 @@ int PlayerValue, DealerValue;
 int temp;
 int P_num, D_num;
 int Cards[4][13];
+bool GameOn;
 
 	//default constructor. Creates a two player game 
 	BlackJack() {		
@@ -34,6 +35,7 @@ int Cards[4][13];
 		DealerValue = 0;
 		P_num =0;
 		D_num=0;
+		GameOn = true;
 	}
 
 
@@ -47,14 +49,21 @@ int Cards[4][13];
 		DealerValue=0;
 		P_num=0;
 		D_num=0;
+		GameOn=true;
 	}
 
 	//destructor
 	~BlackJack() {
 	
 	}
-	
-//used to initialize Cards, Dealer, and Player
+
+
+/*
+Method: SuitesAndFaces
+Parameters: void
+Description: initialize the three multidimensional arrays(Cards, Dealer, & Player)
+Returns: void
+*/
 	void SuitesAndFaces() {
 		for (int i = 0; i < 4; i++)
 		{
@@ -71,6 +80,13 @@ int Cards[4][13];
 		}
 	}
 
+
+/*
+Method: getValue
+Parameters: integer unit
+Description: Converts the Face of the card into its respective value(A -> 1/11, King, Queen, Jack & 10 -> 10)
+Returns: integer; game value of each card
+*/
 	int getValue(int unit){
 		if(unit==0){
 			cout << "Choose a value: 11 or 1?" << endl;
@@ -79,7 +95,7 @@ int Cards[4][13];
 				return 1;
 			else return 11;
 		}
-		else if(unit > 8)
+		else if(unit > 8)//unit 9 translates to a 10, unit 10 into Jack, etc
 			return 10;
 		else return unit+1;
 	}
@@ -100,6 +116,13 @@ Returns: string (one of four suite)
 		else return "Diamonds";
 	}
 
+
+/*
+Method: getFace
+Parameters: integer j
+Description: converts an integer(0-12) into a suit.(a value of 12 is replaced with default case)
+Returns: string(Face value/name of card)
+*/
 	string getFace(int j){
 		switch(j){
 			case 0:
@@ -146,7 +169,13 @@ Returns: string (one of four suite)
 
 
 
-//helper function, called in DealwithIt()
+
+/*
+Method: update
+Parameters: integer x, integer y
+Description: helper method, called in DealwithIt().
+Returns: void; updates the player/dealer's hand with the latest draw. 
+*/
 	void update(int x, int y) {
 		//currPlayer =1 --> Player's turn
 		//currPlayer =2 --> Dealer's turn
@@ -156,6 +185,11 @@ Returns: string (one of four suite)
 			Player[1][P_num]=y;
 			PlayerValue +=getValue(y);
 			P_num++;
+			if(PlayerValue ==21){
+				GameOn = false;
+				cout << "WINNER WINNER CHICKEN DINNER!" << endl;
+				cout << "Player wins!" << endl;
+			}
 			cout << "Player has "<< getFace(y) <<" of " << getSuit(x) << endl;
 			cout <<"PlayerValue: " <<PlayerValue<< "\n" << endl;
 		}
@@ -165,17 +199,27 @@ Returns: string (one of four suite)
 			Dealer[1][D_num]=y;
 			DealerValue +=getValue(y);
 			D_num++;
+			if(DealerValue == 21){
+				GameOn = false;
+				cout << "Dealer wins!" << endl;			
+			}
 			cout << "Dealer has "<< getFace(y) <<" of " << getSuit(x) << endl;
-			cout << "D_num: " << D_num <<" DealerValue: " << DealerValue << "\n"<< endl;
+			cout <<" DealerValue: " << DealerValue << "\n"<< endl;
 		}	
 		totalTurn++;
 		currPlayer = totalTurn % totalPlayer + 1;
 	}
 
 
-//Deals cards
+/*
+Method: DealwithIt
+Parameters: void
+Description: uses RNG to generate a "random" next card. Puts that card into either Dealer/Player's hand.
+Returns: void
+*/
+
+//need to add integer parameter so Player can keep hitting without hitting dealer
 	void DealwithIt() {
-//		srand(time(NULL));
 		value = rand() % 52;
 		x = value/13;
 		y = value%13;
@@ -193,49 +237,84 @@ Returns: string (one of four suite)
 		}
 	}
 
-	void status(){}; //prints out the current state of the game. What cards each player currently has.
+//	void status(){}; //prints out the current state of the game. What cards each player currently has.
+
+
+/*
+Method: isThisDEnd
+Parameters: 
+Description: Assess the Board to see if Player/Dealer has flopped
+Returns: 
+*/
+
+	void isThisDEnd()
+	{
+	if(PlayerValue > 21)
+	{
+		GameOn = false;
+		cout << "Player busts! Dealer wins!" << endl;
+	}
+	else if(DealerValue > 21)
+	{
+		GameOn = false;
+		cout << "Dealer busts! Player wins!" << endl;
+	}
+	else
+		GameOn = true;
+	}
+
+/*
+Method: soWhoWins
+Parameters:
+Description:
+Returns:
+*/
+	void soWhoWins()
+	{
+		cout << "Entered soWhoWins: " << endl;
+		if(PlayerValue > DealerValue)	//Player must beat the dealer to win
+			cout << "Player wins!" << endl;
+		else
+			cout << "Dealer wins!" << endl;
+	}
+
+
 
 };
 
-int main(void) {
-//	int num;
-//	cout<< "Enter Number of Players(2-4): ";
-//	scanf("%d", &num);
-	BlackJack bj (2);
 
-/*
-	for(int i =0; i< 4; i++)
+int main(void) {
+
+BlackJack bj(2);	//initialize object
+srand(time(NULL));
+for(int j=0; j<4; j++)	//deal 4 cards total(2 per player)
+	bj.DealwithIt();
+//ASK PLAYER IF YOU WANT TO HIT
+int hit;
+
+if(bj.GameOn == true)
+{
+	printf("Hit? Type 1 for 'yes' or anything else for 'no': ");
+	scanf("%d", &hit);
+	while(bj.GameOn == true && hit ==1)
 	{
-		for(int j=0; j<13; j++)
+		bj.DealwithIt();
+		bj.isThisDEnd();
+		//cout << "GAME ON: " << bj.GameOn<< endl;
+		if(bj.GameOn==true)
 		{
-			cout << bj.Cards[i][j] << endl;
+			printf("Hit? Type 1 for 'yes' or anything else for 'no': ");
+			scanf("%d", &hit);
 		}
 	}
-
-*/
-
-//	for(int i=0; i< 2; i++)
-//	{
-//		for(int j=0; j<11 ; j++)
-//			cout << bj.Player[i][j] << endl;
-//
-//	}
+	//if user stopped hitting before game is over
+	if(bj.GameOn == true)
+	{
+		bj.soWhoWins();
+	}
+}
 
 
-	srand(time(NULL));
-//	if(num > 1 && num < 5){
-//		for(int i=0; i<num*2; i++)
-//			bj.DealwithIt();
-//	}
-//	else {
-//		cout << "Invalid number of players! Preparing game for two." << endl;
-		for(int j=0; j< 4; j++)
-			bj.DealwithIt();
-//	}
-	
-	
-
-	//ASK IF YOU WANT TO HIT
 }
 
 
