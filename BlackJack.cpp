@@ -17,8 +17,7 @@ public:
 int Dealer[2][11];
 int Player[2][11];
 
-//initialize an array of pointers to Cards[][]
-int Suite, Face, totalTurn, totalPlayer, value, x, y, currPlayer;
+int Suite, Face, totalTurn, totalPlayer, value, x, y;//, currPlayer;
 int PlayerValue, DealerValue;
 int temp;
 int P_num, D_num;
@@ -30,7 +29,7 @@ bool GameOn;
 		SuitesAndFaces();
 		totalTurn= 0;
 		totalPlayer=2;
-		currPlayer=totalTurn % totalPlayer + 1;
+	//	currPlayer=totalTurn % totalPlayer + 1;
 		PlayerValue = 0;
 		DealerValue = 0;
 		P_num =0;
@@ -44,7 +43,7 @@ bool GameOn;
 		SuitesAndFaces();
 		totalTurn=0;
 		totalPlayer= num_Players;
-		currPlayer=totalTurn % totalPlayer + 1;
+	//	currPlayer=totalTurn % totalPlayer + 1;
 		PlayerValue = 0;
 		DealerValue=0;
 		P_num=0;
@@ -167,19 +166,16 @@ Returns: string(Face value/name of card)
 		}
 	}
 
-
-
-
 /*
 Method: update
 Parameters: integer x, integer y
 Description: helper method, called in DealwithIt().
 Returns: void; updates the player/dealer's hand with the latest draw. 
 */
-	void update(int x, int y) {
-		//currPlayer =1 --> Player's turn
-		//currPlayer =2 --> Dealer's turn
-		if(currPlayer==1)
+	void update(int x, int y, int playerID) {
+		//playerID =1 --> Player's turn
+		//playerID =2 --> Dealer's turn
+		if(playerID == 1)
 		{
 			Player[0][P_num]=x;
 			Player[1][P_num]=y;
@@ -204,12 +200,11 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 				cout << "Dealer wins!" << endl;			
 			}
 			cout << "Dealer has "<< getFace(y) <<" of " << getSuit(x) << endl;
-			cout <<" DealerValue: " << DealerValue << "\n"<< endl;
+			cout <<"DealerValue: " << DealerValue << "\n"<< endl;
 		}	
 		totalTurn++;
-		currPlayer = totalTurn % totalPlayer + 1;
+		//currPlayer = totalTurn % totalPlayer + 1;
 	}
-
 
 /*
 Method: DealwithIt
@@ -219,7 +214,7 @@ Returns: void
 */
 
 //need to add integer parameter so Player can keep hitting without hitting dealer
-	void DealwithIt() {
+	void DealwithIt(int playerID) {
 		value = rand() % 52;
 		x = value/13;
 		y = value%13;
@@ -227,13 +222,13 @@ Returns: void
 		//use srand and rng to get a random x and y
 		if (Cards[x][y] == 0)
 		{
-			Cards[x][y] = currPlayer;
+			Cards[x][y] = playerID;
 			cout <<"x is: " << x << " and y is: "<< y << endl;			
-			update(x,y);
+			update(x,y, playerID);
 		}
 		else {
 			cout << "not this one.... x is: " << x << " and y is: " << y << endl;
-			DealwithIt();
+			DealwithIt(playerID);
 		}
 	}
 
@@ -249,7 +244,11 @@ Returns:
 
 	void isThisDEnd()
 	{
-	if(PlayerValue > 21)
+	if(PlayerValue ==21 || DealerValue ==21)
+	{
+		GameOn=false;
+	}
+	else if(PlayerValue > 21)
 	{
 		GameOn = false;
 		cout << "Player busts! Dealer wins!" << endl;
@@ -272,10 +271,21 @@ Returns:
 	void soWhoWins()
 	{
 		cout << "Entered soWhoWins: " << endl;
-		if(PlayerValue > DealerValue)	//Player must beat the dealer to win
+		if(PlayerValue > DealerValue)	//Player must beat the dealer to wina
+		{
+			//cout << "PlayerValue: " << PlayerValue << ", DealerValue: "<<DealerValue << endl;
 			cout << "Player wins!" << endl;
+		}
+		else if(PlayerValue == DealerValue)
+		{
+			cout << "Tied! Dealer wins!" << endl;
+		}
 		else
+		{
+			//cout << "PlayerValue: " << PlayerValue << ", DealerValue: "<<DealerValue << endl;
 			cout << "Dealer wins!" << endl;
+		}
+		GameOn = false;
 	}
 
 
@@ -285,34 +295,40 @@ Returns:
 
 int main(void) {
 
-BlackJack bj(2);	//initialize object
-srand(time(NULL));
-for(int j=0; j<4; j++)	//deal 4 cards total(2 per player)
-	bj.DealwithIt();
-//ASK PLAYER IF YOU WANT TO HIT
-int hit;
-
-if(bj.GameOn == true)
-{
-	printf("Hit? Type 1 for 'yes' or anything else for 'no': ");
-	scanf("%d", &hit);
-	while(bj.GameOn == true && hit ==1)
-	{
-		bj.DealwithIt();
-		bj.isThisDEnd();
-		//cout << "GAME ON: " << bj.GameOn<< endl;
-		if(bj.GameOn==true)
-		{
-			printf("Hit? Type 1 for 'yes' or anything else for 'no': ");
-			scanf("%d", &hit);
-		}
-	}
-	//if user stopped hitting before game is over
+	BlackJack bj(2);	//initialize object
+	srand(time(NULL));
+	while (bj.GameOn == true && bj.totalTurn <4)
+		bj.DealwithIt(bj.totalTurn%2 + 1);
+	//ASK PLAYER IF YOU WANT TO HIT
+	int hit;
 	if(bj.GameOn == true)
 	{
-		bj.soWhoWins();
+		printf("Player's turn.\n");
+		printf("Hit? Type 1 for 'yes' or anything else for 'no': ");
+		scanf("%d", &hit);
+		while(bj.GameOn == true && hit ==1)
+		{
+			bj.DealwithIt(1); //player keeps hitting
+			bj.isThisDEnd();
+			//cout << "GAME ON: " << bj.GameOn<< endl;
+			if(bj.GameOn==true)
+			{
+				printf("Hit? Type 1 for 'yes' or anything else for 'no': ");
+				scanf("%d", &hit);
+			}
+		}	
+		//while loop for dealer
+		while(bj.GameOn == true && bj.DealerValue < bj.PlayerValue)
+		{
+			bj.DealwithIt(2);
+			bj.isThisDEnd();
+		}
+		//if user stopped hitting before game is over
+		if(bj.GameOn == true)
+		{
+			bj.soWhoWins();
+		}
 	}
-}
 
 
 }
