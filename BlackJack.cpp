@@ -5,8 +5,9 @@
 #include <cstdlib>
 #include <string>
 //written by Jay Lim
-//Start Date: 9/11/16
-//implement a probability of busting on next draw
+//Last Edited: 9/23/16
+//Simple one player blackjack game(against dealer)
+//To Do: implement a multiplayer option & GUI
 
 using namespace std;
 
@@ -14,14 +15,19 @@ class BlackJack {
 public:
 
 //the maxiumum number of cards one can hold without busting is 11
-int Dealer[2][11];
-int Player[2][11];
+int Dealer[2][11];	//dealer's hand
+int Player[2][11];	//player's hand
 
-int Suite, Face, totalTurn, totalPlayer, value, x, y;//, currPlayer;
+int Suite, Face, totalTurn, totalPlayer, value, x, y;
 int PlayerValue, DealerValue;
 int temp;
-int P_num, D_num;
-int Cards[4][13];
+int P_num, D_num;	//number of cards in each hand(used to update each player's hand)
+
+int Cards[4][13];	//deck of cards
+
+int p_counter;		//counts the number of next draw options that don't result in a bust
+double percentage;
+
 bool GameOn;
 
 	//default constructor. Creates a two player game 
@@ -29,12 +35,12 @@ bool GameOn;
 		SuitesAndFaces();
 		totalTurn= 0;
 		totalPlayer=2;
-	//	currPlayer=totalTurn % totalPlayer + 1;
 		PlayerValue = 0;
 		DealerValue = 0;
 		P_num =0;
 		D_num=0;
 		GameOn = true;
+		p_counter = 0;
 	}
 
 
@@ -43,19 +49,18 @@ bool GameOn;
 		SuitesAndFaces();
 		totalTurn=0;
 		totalPlayer= num_Players;
-	//	currPlayer=totalTurn % totalPlayer + 1;
 		PlayerValue = 0;
 		DealerValue=0;
 		P_num=0;
 		D_num=0;
 		GameOn=true;
+		p_counter = 0;
 	}
 
 	//destructor
 	~BlackJack() {
 	
 	}
-
 
 /*
 Method: SuitesAndFaces
@@ -203,7 +208,6 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 			cout <<"DealerValue: " << DealerValue << "\n"<< endl;
 		}	
 		totalTurn++;
-		//currPlayer = totalTurn % totalPlayer + 1;
 	}
 
 /*
@@ -212,8 +216,6 @@ Parameters: void
 Description: uses RNG to generate a "random" next card. Puts that card into either Dealer/Player's hand.
 Returns: void
 */
-
-//need to add integer parameter so Player can keep hitting without hitting dealer
 	void DealwithIt(int playerID) {
 		value = rand() % 52;
 		x = value/13;
@@ -223,7 +225,7 @@ Returns: void
 		if (Cards[x][y] == 0)
 		{
 			Cards[x][y] = playerID;
-			cout <<"x is: " << x << " and y is: "<< y << endl;			
+			//cout <<"x is: " << x << " and y is: "<< y << endl;			
 			update(x,y, playerID);
 		}
 		else {
@@ -232,16 +234,12 @@ Returns: void
 		}
 	}
 
-//	void status(){}; //prints out the current state of the game. What cards each player currently has.
-
-
 /*
 Method: isThisDEnd
-Parameters: 
-Description: Assess the Board to see if Player/Dealer has flopped
-Returns: 
+Parameters: void
+Description: Assess the hand to see if Player/Dealer has flopped
+Returns: void
 */
-
 	void isThisDEnd()
 	{
 	if(PlayerValue ==21 || DealerValue ==21)
@@ -264,16 +262,16 @@ Returns:
 
 /*
 Method: soWhoWins
-Parameters:
-Description:
-Returns:
+Parameters: void
+Description: Helper method that is called only if both player and dealer don't bust. 
+		Prints out the winner.
+Returns: void
 */
 	void soWhoWins()
 	{
 		cout << "Entered soWhoWins: " << endl;
 		if(PlayerValue > DealerValue)	//Player must beat the dealer to wina
 		{
-			//cout << "PlayerValue: " << PlayerValue << ", DealerValue: "<<DealerValue << endl;
 			cout << "Player wins!" << endl;
 		}
 		else if(PlayerValue == DealerValue)
@@ -282,13 +280,38 @@ Returns:
 		}
 		else
 		{
-			//cout << "PlayerValue: " << PlayerValue << ", DealerValue: "<<DealerValue << endl;
 			cout << "Dealer wins!" << endl;
 		}
 		GameOn = false;
 	}
 
 
+/*
+Method: bustPercentage
+Parameters: void
+Description: Calculates the percentage of busting using the remaining cards left in the deck. 
+Returns: void
+*/
+	void bustPercentage()
+	{
+		p_counter = 0;
+		if(PlayerValue > 11)
+		{
+			int magic_num = 21 - PlayerValue;
+			for(int j =0; j < 4 ; j++)
+			{
+				for(int i=0; i<magic_num; i++)
+				{
+					if(Cards[j][i]==0)
+						p_counter++;
+				}
+			}
+			percentage = 100 - 100*((double)p_counter/(52-totalTurn));
+			cout << "Percentage of busting: " << percentage << endl;
+		}
+		else
+			cout << "no chance of busting! I recommend that you take another card" << endl;
+	}
 
 };
 
@@ -304,15 +327,17 @@ int main(void) {
 	if(bj.GameOn == true)
 	{
 		printf("Player's turn.\n");
+		bj.bustPercentage();
 		printf("Hit? Type 1 for 'yes' or anything else for 'no': ");
 		scanf("%d", &hit);
 		while(bj.GameOn == true && hit ==1)
 		{
 			bj.DealwithIt(1); //player keeps hitting
 			bj.isThisDEnd();
-			//cout << "GAME ON: " << bj.GameOn<< endl;
+			//method that calculates likelihood of busting on next draw
 			if(bj.GameOn==true)
-			{
+			{	
+				bj.bustPercentage();
 				printf("Hit? Type 1 for 'yes' or anything else for 'no': ");
 				scanf("%d", &hit);
 			}
