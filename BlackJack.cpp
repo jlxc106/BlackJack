@@ -4,9 +4,12 @@
 #include <ctime>
 #include <cstdlib>
 #include <string>
+#include <unistd.h>
+
 //written by Jay Lim
-//Last Edited: 9/23/16
+//Last Edited: 10/06/16
 //Simple one player blackjack game(against dealer)
+//Last Edit: clean global variables & make code reader-friendly
 //To Do: implement a multiplayer option & GUI
 
 using namespace std;
@@ -18,9 +21,8 @@ public:
 int Dealer[2][11];	//dealer's hand
 int Player[2][11];	//player's hand
 
-int Suite, Face, totalTurn, totalPlayer, value, x, y;
+int Suite, Face, totalTurn, totalPlayer, value;
 int PlayerValue, DealerValue;
-int temp;
 int P_num, D_num;	//number of cards in each hand(used to update each player's hand)
 
 int Cards[4][13];	//deck of cards
@@ -59,13 +61,13 @@ bool GameOn;
 
 	//destructor
 	~BlackJack() {
-	
+		
 	}
 
 /*
 Method: SuitesAndFaces
 Parameters: void
-Description: initialize the three multidimensional arrays(Cards, Dealer, & Player)
+Description: helper method used to initialize the three multidimensional arrays(Cards, Dealer, & Player)
 Returns: void
 */
 	void SuitesAndFaces() {
@@ -77,13 +79,12 @@ Returns: void
 			}
 		}
 		for(int x=0; x<2; x++){
-			for(y=0; y<11; y++){
+			for(int y=0; y<11; y++){
 				Dealer[x][y]=0;
 				Player[x][y]=0;
 			}
 		}
 	}
-
 
 /*
 Method: getValue
@@ -93,11 +94,16 @@ Returns: integer; game value of each card
 */
 	int getValue(int unit){
 		if(unit==0){
-			cout << "Choose a value: 11 or 1?" << endl;
-			scanf("%d", &temp);
-			if(temp ==1)
-				return 1;
-			else return 11;
+			int temp=0;
+			while(temp !=1 || temp !=11){
+				cout << "Choose a value: 11 or 1?";
+				cin >> temp;
+				if(temp ==1)
+					return 1;
+				else if(temp==11)
+					return 11;
+				else cout << "Enter a valid number!" << endl;
+			}
 		}
 		else if(unit > 8)//unit 9 translates to a 10, unit 10 into Jack, etc
 			return 10;
@@ -171,9 +177,18 @@ Returns: string(Face value/name of card)
 		}
 	}
 
+
+
+	void setup(int numPlayers){
+		while(GameOn == true && totalTurn < (numPlayers * 2)){
+			DealwithIt(totalTurn%2+1);
+			usleep(750000);			//sleep for .75 seconds
+		}
+	}
+
 /*
 Method: update
-Parameters: integer x, integer y
+Parameters: integer x, integer y, int playerID
 Description: helper method, called in DealwithIt().
 Returns: void; updates the player/dealer's hand with the latest draw. 
 */
@@ -184,12 +199,17 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 		{
 			Player[0][P_num]=x;
 			Player[1][P_num]=y;
-			PlayerValue +=getValue(y);
+			PlayerValue += getValue(y);
 			P_num++;
 			if(PlayerValue ==21){
 				GameOn = false;
 				cout << "WINNER WINNER CHICKEN DINNER!" << endl;
 				cout << "Player wins!" << endl;
+			}
+			else if(PlayerValue > 21)
+			{
+				GameOn = false;
+				cout << "Player busts! Dealer wins!" << endl;
 			}
 			cout << "Player has "<< getFace(y) <<" of " << getSuit(x) << endl;
 			cout <<"PlayerValue: " <<PlayerValue<< "\n" << endl;
@@ -203,6 +223,11 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 			if(DealerValue == 21){
 				GameOn = false;
 				cout << "Dealer wins!" << endl;			
+			}
+			else if(DealerValue > 21)
+			{
+				GameOn = false;
+				cout << "Dealer busts! Player wins!" << endl;
 			}
 			cout << "Dealer has "<< getFace(y) <<" of " << getSuit(x) << endl;
 			cout <<"DealerValue: " << DealerValue << "\n"<< endl;
@@ -218,8 +243,8 @@ Returns: void
 */
 	void DealwithIt(int playerID) {
 		value = rand() % 52;
-		x = value/13;
-		y = value%13;
+		int x = value/13;
+		int y = value%13;
 
 		//use srand and rng to get a random x and y
 		if (Cards[x][y] == 0)
@@ -239,7 +264,6 @@ Method: isThisDEnd
 Parameters: void
 Description: Assess the hand to see if Player/Dealer has flopped
 Returns: void
-*/
 	void isThisDEnd()
 	{
 	if(PlayerValue ==21 || DealerValue ==21)
@@ -259,6 +283,7 @@ Returns: void
 	else
 		GameOn = true;
 	}
+*/
 
 /*
 Method: soWhoWins
@@ -315,9 +340,8 @@ Returns: void
 
 };
 
-
+/*
 int main(void) {
-
 	BlackJack bj(2);	//initialize object
 	srand(time(NULL));
 	while (bj.GameOn == true && bj.totalTurn <4)
@@ -354,9 +378,7 @@ int main(void) {
 			bj.soWhoWins();
 		}
 	}
-
-
 }
 
 
-
+*/
