@@ -8,8 +8,8 @@
 
 //written by Jay Lim
 //Last Edited: 10/27/16
-//Simple one player blackjack game(against dealer)
-//Last Edit: removed excessive methods & made game compatible for up to 3 players + 1 dealer.
+//Multiplayer blackjack game(against dealer)
+//Last Edit: Removed excessive methods & made game compatible for up to 3 players + 1 dealer. Commenting changes.
 //To Do: implement a GUI(using QT)
 
 using namespace std;
@@ -53,7 +53,8 @@ double percentage;
 		P3_num=0;
 		D_num=0;
 	}
-//no destructor required
+
+	//no destructor required
 	~BlackJack(){};
 
 /*
@@ -164,11 +165,9 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 			HandValue[0] += getValue(y);
 			P1_num++;
 			if(HandValue[0] ==21){
-				//GameOn = false;
 				cout << "21!" << endl;
 			}
 			else if(HandValue[0] > 21){
-				//GameOn = false;
 				cout << "Player 1 busts!" << endl;
 			}
 			cout << "Player 1 has "<< getFace(y) <<" of " << getSuit(x) << endl;
@@ -181,11 +180,9 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 			HandValue[1] += getValue(y);
 			P2_num++;
 			if(HandValue[1] ==21){
-				//GameOn = false;
 				cout << "21!" << endl;
 			}
 			else if(HandValue[1] > 21){
-				//GameOn = false;
 				cout << "Player 2 busts!" << endl;
 			}
 			cout << "Player 2 has "<< getFace(y) <<" of " << getSuit(x) << endl;
@@ -198,7 +195,6 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 			HandValue[2] += getValue(y);
 			P3_num++;
 			if(HandValue[2] ==21){
-				//GameOn = false;
 				cout << "21!" << endl;
 			}
 			else if(HandValue[2] > 21){
@@ -214,11 +210,9 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 			HandValue[3] +=getValue(y);
 			D_num++;
 			if(HandValue[3] == 21){
-				//GameOn = false;
 				cout << "Dealer wins!" << endl;			
 			}
 			else if(HandValue[3] > 21){
-				//GameOn = false;
 				cout << "Dealer busts!" << endl;
 			}
 			cout << "Dealer has "<< getFace(y) <<" of " << getSuit(x) << endl;
@@ -229,7 +223,7 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 
 /*
 Method: DealwithIt
-Parameters: void
+Parameters: int playerID
 Description: uses RNG to generate a "random" next card. Puts that card into either Dealer/Player's hand.
 Returns: void
 */
@@ -244,7 +238,7 @@ Returns: void
 			Cards[x][y] = playerID;
 			update(x,y, playerID);
 		}
-		else{	//duplicate card - reroll rng
+		else{	//duplicate card - reroll 
 			DealwithIt(playerID);
 		}
 	}
@@ -252,8 +246,7 @@ Returns: void
 /*
 Method: soWhoWins
 Parameters: void
-Description: Helper method that is called only if both player and dealer don't bust. 
-		Prints out the winner.
+Description: Method called just prior to end of the game. Used to determine the winners & losers
 Returns: void
 */
 	void soWhoWins(){
@@ -313,6 +306,7 @@ int main(void) {
 	BlackJack bj(numPlayers);
 	
 	srand(time(NULL));
+
 	while (bj.totalTurn < numPlayers * 2){
 		bj.DealwithIt((bj.totalTurn % numPlayers) + 1);
 		if(bj.totalTurn==numPlayers)
@@ -340,11 +334,11 @@ int main(void) {
 	}
 	//Dealer must stand with a hand value greater than or equal to 17.
 	while(bj.HandValue[3] < 17){
+		cout <<"********************************************\n" << endl;
 		cout << "Dealer has "<< bj.HandValue[3] << endl;
 		bj.DealwithIt(numPlayers);
 	}
 	bj.soWhoWins();
-
 }
 
 
