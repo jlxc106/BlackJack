@@ -18,20 +18,21 @@ class BlackJack {
 public:
 
 //the maxiumum number of cards one can hold without busting is 11
+//two columns to store a card's suite(diamonds, hearts, clubs, ace) and face value(Ace, 2, 3, ...)
 int Dealer[2][11]={{ 0 }};	//dealer's hand
-int Player1[2][11]={{ 0 }};	//player's hand
-int Player2[2][11]={{ 0 }};
-int Player3[2][11]={{ 0 }};
+int Player1[2][11]={{ 0 }};	//player 1's hand
+int Player2[2][11]={{ 0 }};	//player 2's hand
+int Player3[2][11]={{ 0 }};	//player 3's hand
 
-int HandValue[4]={0};
+//HandValue[3] is the dealer's hand
+int HandValue[4]={ 0 };
 
-int Suite, Face, totalTurn, totalPlayer, value;
-int P1_num, P2_num, P3_num, D_num;	//number of cards in each hand(used to update each player's hand)
+int totalTurn, totalPlayer;
+int P1_num, P2_num, P3_num, D_num;	//number of cards in each hand
 
 int Cards[4][13]={{ 0 }};	//deck of cards
 
 double percentage;
-
 
 	//default constructor. Creates a two player game 
 	BlackJack(){		
@@ -74,7 +75,7 @@ Returns: integer; game value of each card
 				else cout << "Enter a valid number!" << endl;
 			}
 		}
-		else if(unit > 8)//unit 9 translates to a 10, unit 10 into Jack, etc
+		else if(unit > 8)	//unit 9 translates to a 10, unit 10 into Jack, etc
 			return 10;
 		else return unit+1;
 	}
@@ -234,7 +235,7 @@ Returns: void
 */
 	void DealwithIt(int playerID) {
 		sleep(1);
-		value = rand() % 52;
+		int value = rand() % 52;
 		int x = value/13;
 		int y = value%13;
 
@@ -243,8 +244,7 @@ Returns: void
 			Cards[x][y] = playerID;
 			update(x,y, playerID);
 		}
-		else{
-			//cout << "not this one.... x is: " << x << " and y is: " << y << endl;
+		else{	//duplicate card - reroll rng
 			DealwithIt(playerID);
 		}
 	}
@@ -263,7 +263,6 @@ Returns: void
 				x[i]=HandValue[i];
 			else
 				x[i]=0;
-			//x[i](HandValue[i]<=21 ? HandValue[i]:0);
 		}
 		if(x[3]==0)	//dealer bust
 			cout << "Dealer has busted! Players win!" << endl;
