@@ -7,10 +7,10 @@
 #include <unistd.h>
 
 //written by Jay Lim
-//Last Edited: 10/06/16
+//Last Edited: 10/27/16
 //Simple one player blackjack game(against dealer)
-//Last Edit: clean global variables & make code reader-friendly
-//To Do: implement a multiplayer option & GUI
+//Last Edit: removed excessive methods & made game compatible for up to 3 players + 1 dealer.
+//To Do: implement a GUI(using QT)
 
 using namespace std;
 
@@ -18,73 +18,42 @@ class BlackJack {
 public:
 
 //the maxiumum number of cards one can hold without busting is 11
-int Dealer[2][11];	//dealer's hand
-int Player[2][11];	//player's hand
+int Dealer[2][11]={{ 0 }};	//dealer's hand
+int Player1[2][11]={{ 0 }};	//player's hand
+int Player2[2][11]={{ 0 }};
+int Player3[2][11]={{ 0 }};
+
+int HandValue[4]={0};
 
 int Suite, Face, totalTurn, totalPlayer, value;
-int PlayerValue, DealerValue;
-int P_num, D_num;	//number of cards in each hand(used to update each player's hand)
+int P1_num, P2_num, P3_num, D_num;	//number of cards in each hand(used to update each player's hand)
 
-int Cards[4][13];	//deck of cards
+int Cards[4][13]={{ 0 }};	//deck of cards
 
-int p_counter;		//counts the number of next draw options that don't result in a bust
 double percentage;
 
-bool GameOn;
 
 	//default constructor. Creates a two player game 
-	BlackJack() {		
-		SuitesAndFaces();
+	BlackJack(){		
 		totalTurn= 0;
 		totalPlayer=2;
-		PlayerValue = 0;
-		DealerValue = 0;
-		P_num =0;
+		P1_num = 0;
+		P2_num = 0;
+		P3_num = 0;
 		D_num=0;
-		GameOn = true;
-		p_counter = 0;
 	}
-
 
 	//user inputs the number of players in the game
 	BlackJack(int num_Players) {
-		SuitesAndFaces();
 		totalTurn=0;
 		totalPlayer= num_Players;
-		PlayerValue = 0;
-		DealerValue=0;
-		P_num=0;
+		P1_num=0;
+		P2_num=0;
+		P3_num=0;
 		D_num=0;
-		GameOn=true;
-		p_counter = 0;
 	}
-
-	//destructor
-	~BlackJack() {
-		
-	}
-
-/*
-Method: SuitesAndFaces
-Parameters: void
-Description: helper method used to initialize the three multidimensional arrays(Cards, Dealer, & Player)
-Returns: void
-*/
-	void SuitesAndFaces() {
-		for (int i = 0; i < 4; i++)
-		{
-			for (int j = 0; j < 13; j++)
-			{
-				Cards[i][j]=0;
-			}
-		}
-		for(int x=0; x<2; x++){
-			for(int y=0; y<11; y++){
-				Dealer[x][y]=0;
-				Player[x][y]=0;
-			}
-		}
-	}
+//no destructor required
+	~BlackJack(){};
 
 /*
 Method: getValue
@@ -177,15 +146,6 @@ Returns: string(Face value/name of card)
 		}
 	}
 
-
-
-	void setup(int numPlayers){
-		while(GameOn == true && totalTurn < (numPlayers * 2)){
-			DealwithIt(totalTurn%2+1);
-			usleep(750000);			//sleep for .75 seconds
-		}
-	}
-
 /*
 Method: update
 Parameters: integer x, integer y, int playerID
@@ -193,44 +153,75 @@ Description: helper method, called in DealwithIt().
 Returns: void; updates the player/dealer's hand with the latest draw. 
 */
 	void update(int x, int y, int playerID) {
-		//playerID =1 --> Player's turn
-		//playerID =2 --> Dealer's turn
-		if(playerID == 1)
-		{
-			Player[0][P_num]=x;
-			Player[1][P_num]=y;
-			PlayerValue += getValue(y);
-			P_num++;
-			if(PlayerValue ==21){
-				GameOn = false;
-				cout << "WINNER WINNER CHICKEN DINNER!" << endl;
-				cout << "Player wins!" << endl;
+		//playerID = 1 --> Player 1's turn
+		//PlayerID = ......
+		//playerID = totalPlayer --> Dealer's turn
+		if(playerID == 1){
+			cout << "Player 1's Turn: " << endl;
+			Player1[0][P1_num]=x;
+			Player1[1][P1_num]=y;
+			HandValue[0] += getValue(y);
+			P1_num++;
+			if(HandValue[0] ==21){
+				//GameOn = false;
+				cout << "21!" << endl;
 			}
-			else if(PlayerValue > 21)
-			{
-				GameOn = false;
-				cout << "Player busts! Dealer wins!" << endl;
+			else if(HandValue[0] > 21){
+				//GameOn = false;
+				cout << "Player 1 busts!" << endl;
 			}
-			cout << "Player has "<< getFace(y) <<" of " << getSuit(x) << endl;
-			cout <<"PlayerValue: " <<PlayerValue<< "\n" << endl;
+			cout << "Player 1 has "<< getFace(y) <<" of " << getSuit(x) << endl;
+			cout <<"Player 1's Hand Value: " <<HandValue[0]<< "\n" << endl;
 		}
-		else
-		{
+		else if(playerID == 2 && playerID != totalPlayer){
+			cout << "Player 2's Turn: " << endl;
+			Player2[0][P2_num]=x;
+			Player2[1][P2_num]=y;
+			HandValue[1] += getValue(y);
+			P2_num++;
+			if(HandValue[1] ==21){
+				//GameOn = false;
+				cout << "21!" << endl;
+			}
+			else if(HandValue[1] > 21){
+				//GameOn = false;
+				cout << "Player 2 busts!" << endl;
+			}
+			cout << "Player 2 has "<< getFace(y) <<" of " << getSuit(x) << endl;
+			cout <<"Player 2's Hand Value: " << HandValue[1] << "\n" << endl;
+		}
+		else if(playerID == 3 && playerID != totalPlayer){
+			cout << "Player 3's Turn: " << endl;
+			Player3[0][P1_num]=x;
+			Player3[1][P1_num]=y;
+			HandValue[2] += getValue(y);
+			P3_num++;
+			if(HandValue[2] ==21){
+				//GameOn = false;
+				cout << "21!" << endl;
+			}
+			else if(HandValue[2] > 21){
+				cout << "Player 3 busts!" << endl;
+			}
+			cout << "Player 3 has "<< getFace(y) <<" of " << getSuit(x) << endl;
+			cout <<"Player 3's Hand Value: " << HandValue[2] << "\n" << endl;
+		}
+		else{
+			cout << "Dealer's Turn: " << endl;
 			Dealer[0][D_num]=x;
 			Dealer[1][D_num]=y;
-			DealerValue +=getValue(y);
+			HandValue[3] +=getValue(y);
 			D_num++;
-			if(DealerValue == 21){
-				GameOn = false;
+			if(HandValue[3] == 21){
+				//GameOn = false;
 				cout << "Dealer wins!" << endl;			
 			}
-			else if(DealerValue > 21)
-			{
-				GameOn = false;
-				cout << "Dealer busts! Player wins!" << endl;
+			else if(HandValue[3] > 21){
+				//GameOn = false;
+				cout << "Dealer busts!" << endl;
 			}
 			cout << "Dealer has "<< getFace(y) <<" of " << getSuit(x) << endl;
-			cout <<"DealerValue: " << DealerValue << "\n"<< endl;
+			cout <<"DealerValue: " << HandValue[3] << "\n"<< endl;
 		}	
 		totalTurn++;
 	}
@@ -242,48 +233,21 @@ Description: uses RNG to generate a "random" next card. Puts that card into eith
 Returns: void
 */
 	void DealwithIt(int playerID) {
+		sleep(1);
 		value = rand() % 52;
 		int x = value/13;
 		int y = value%13;
 
 		//use srand and rng to get a random x and y
-		if (Cards[x][y] == 0)
-		{
+		if (Cards[x][y] == 0){
 			Cards[x][y] = playerID;
-			//cout <<"x is: " << x << " and y is: "<< y << endl;			
 			update(x,y, playerID);
 		}
-		else {
-			cout << "not this one.... x is: " << x << " and y is: " << y << endl;
+		else{
+			//cout << "not this one.... x is: " << x << " and y is: " << y << endl;
 			DealwithIt(playerID);
 		}
 	}
-
-/*
-Method: isThisDEnd
-Parameters: void
-Description: Assess the hand to see if Player/Dealer has flopped
-Returns: void
-	void isThisDEnd()
-	{
-	if(PlayerValue ==21 || DealerValue ==21)
-	{
-		GameOn=false;
-	}
-	else if(PlayerValue > 21)
-	{
-		GameOn = false;
-		cout << "Player busts! Dealer wins!" << endl;
-	}
-	else if(DealerValue > 21)
-	{
-		GameOn = false;
-		cout << "Dealer busts! Player wins!" << endl;
-	}
-	else
-		GameOn = true;
-	}
-*/
 
 /*
 Method: soWhoWins
@@ -292,41 +256,43 @@ Description: Helper method that is called only if both player and dealer don't b
 		Prints out the winner.
 Returns: void
 */
-	void soWhoWins()
-	{
-		cout << "Entered soWhoWins: " << endl;
-		if(PlayerValue > DealerValue)	//Player must beat the dealer to wina
-		{
-			cout << "Player wins!" << endl;
+	void soWhoWins(){
+		int x[4];
+		for(int i=0; i<4; i++){
+			if(HandValue[i] <=21)
+				x[i]=HandValue[i];
+			else
+				x[i]=0;
+			//x[i](HandValue[i]<=21 ? HandValue[i]:0);
 		}
-		else if(PlayerValue == DealerValue)
-		{
-			cout << "Tied! Dealer wins!" << endl;
-		}
-		else
-		{
+		if(x[3]==0)	//dealer bust
+			cout << "Dealer has busted! Players win!" << endl;
+		else if(x[3] >= x[0] && 
+			x[3] >= x[1] && x[3] >= x[2]){
 			cout << "Dealer wins!" << endl;
 		}
-		GameOn = false;
+		else{
+			for(int i=0; i<totalPlayer-1; i++){
+				if(x[i] > x[3] && x[i] != 0)
+					cout << "Player " << i+1 << " wins!" << endl;
+			}	
+		}
 	}
-
 
 /*
 Method: bustPercentage
-Parameters: void
+Parameters: int playerID
 Description: Calculates the percentage of busting using the remaining cards left in the deck. 
 Returns: void
 */
-	void bustPercentage()
-	{
-		p_counter = 0;
-		if(PlayerValue > 11)
-		{
-			int magic_num = 21 - PlayerValue;
-			for(int j =0; j < 4 ; j++)
-			{
-				for(int i=0; i<magic_num; i++)
-				{
+	void bustPercentage(int playerID){
+		int p_counter = 0;
+		if(HandValue[playerID-1]==21)
+			cout <<"Percentage of busting: 100%" << endl;
+		else if(HandValue[playerID-1] > 11){
+			int magic_num = 21 - HandValue[playerID-1];
+			for(int j =0; j < 4 ; j++){
+				for(int i=0; i<magic_num; i++){
 					if(Cards[j][i]==0)
 						p_counter++;
 				}
@@ -340,45 +306,46 @@ Returns: void
 
 };
 
-/*
 int main(void) {
-	BlackJack bj(2);	//initialize object
+	int numPlayers;
+	cout << "Enter the number of players:(2-4) ";
+	cin >>numPlayers;
+	cout << "" << endl;
+	BlackJack bj(numPlayers);
+	
 	srand(time(NULL));
-	while (bj.GameOn == true && bj.totalTurn <4)
-		bj.DealwithIt(bj.totalTurn%2 + 1);
-	//ASK PLAYER IF YOU WANT TO HIT
-	int hit;
-	if(bj.GameOn == true)
-	{
-		printf("Player's turn.\n");
-		bj.bustPercentage();
-		printf("Hit? Type 1 for 'yes' or anything else for 'no': ");
-		scanf("%d", &hit);
-		while(bj.GameOn == true && hit ==1)
-		{
-			bj.DealwithIt(1); //player keeps hitting
-			bj.isThisDEnd();
-			//method that calculates likelihood of busting on next draw
-			if(bj.GameOn==true)
-			{	
-				bj.bustPercentage();
-				printf("Hit? Type 1 for 'yes' or anything else for 'no': ");
-				scanf("%d", &hit);
+	while (bj.totalTurn < numPlayers * 2){
+		bj.DealwithIt((bj.totalTurn % numPlayers) + 1);
+		if(bj.totalTurn==numPlayers)
+			cout << "****************************************\n"<<endl;
+	}
+	
+	char hit;
+	//players hit until they choose to stay
+	for(int i=1; i < numPlayers; i++){
+		cout << "Player " << i << "'s turn."<<endl;
+		cout << "Player has " << bj.HandValue[i-1] << endl;
+		bj.bustPercentage(i);
+		cout << "Hit? Type 'Y'/'y' for 'yes' or anything else for 'no': ";
+		cin >> hit;
+		cout << "" << endl;
+		while(bj.HandValue[i-1] < 21 && (hit =='Y' ||hit =='y') ){
+			bj.DealwithIt(i);
+			if(bj.HandValue[i-1] < 21){ 
+				bj.bustPercentage(i);
+				cout << "Hit? Type 'Y'/'y' for 'yes' or anything else for 'no': ";
+				cin >> hit;
+				cout << "" << endl;
 			}
-		}	
-		//while loop for dealer
-		while(bj.GameOn == true && bj.DealerValue < bj.PlayerValue)
-		{
-			bj.DealwithIt(2);
-			bj.isThisDEnd();
-		}
-		//if user stopped hitting before game is over
-		if(bj.GameOn == true)
-		{
-			bj.soWhoWins();
 		}
 	}
+	//Dealer must stand with a hand value greater than or equal to 17.
+	while(bj.HandValue[3] < 17){
+		cout << "Dealer has "<< bj.HandValue[3] << endl;
+		bj.DealwithIt(numPlayers);
+	}
+	bj.soWhoWins();
+
 }
 
 
-*/
