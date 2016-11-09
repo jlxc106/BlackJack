@@ -5,12 +5,15 @@
 #include <cstdlib>
 #include <string>
 #include <unistd.h>
+#include <Python.h>
+#include <boost/python.hpp>
 
 //written by Jay Lim
 //Last Edited: 10/27/16
 //Multiplayer blackjack game(against dealer)
 //Last Edit: Removed excessive methods & made game compatible for up to 3 players + 1 dealer. Commenting changes.
 //To Do: implement a GUI(using QT)
+
 
 using namespace std;
 
@@ -42,6 +45,7 @@ double percentage;
 		P2_num = 0;
 		P3_num = 0;
 		D_num=0;
+		srand(time(NULL));
 	}
 
 	//user inputs the number of players in the game
@@ -52,6 +56,7 @@ double percentage;
 		P2_num=0;
 		P3_num=0;
 		D_num=0;
+		srand(time(NULL));
 	}
 
 	//no destructor required
@@ -89,12 +94,12 @@ Returns: string (one of four suite)
 */
 	string getSuit(int i){
 		if(i==0)
-			return "Spades";
+			return "spades";
 		else if (i==1)
-			return "Hearts";
+			return "hearts";
 		else if (i==2)
-			return "Spades";
-		else return "Diamonds";
+			return "clubs";
+		else return "diamonds";
 	}
 
 
@@ -107,7 +112,7 @@ Returns: string(Face value/name of card)
 	string getFace(int j){
 		switch(j){
 			case 0:
-				return "Ace";
+				return "ace";
 				break;
 			case 1: 
 				return "2";
@@ -137,13 +142,13 @@ Returns: string(Face value/name of card)
 				return "10";
 				break;
 			case 10:
-				return "Jack";
+				return "jack";
 				break;
 			case 11:
-				return "Queen";
+				return "queen";
 				break;
 			default:
-				return "King";
+				return "king";
 				break;
 		}
 	}
@@ -154,10 +159,11 @@ Parameters: integer x, integer y, int playerID
 Description: helper method, called in DealwithIt().
 Returns: void; updates the player/dealer's hand with the latest draw. 
 */
-	void update(int x, int y, int playerID) {
+	string update(int x, int y, int playerID) {
 		//playerID = 1 --> Player 1's turn
 		//PlayerID = ......
 		//playerID = totalPlayer --> Dealer's turn
+		string temp= "";
 		if(playerID == 1){
 			cout << "Player 1's Turn: " << endl;
 			Player1[0][P1_num]=x;
@@ -172,6 +178,7 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 			}
 			cout << "Player 1 has "<< getFace(y) <<" of " << getSuit(x) << endl;
 			cout <<"Player 1's Hand Value: " <<HandValue[0]<< "\n" << endl;
+			temp = getFace(y)+"_of_"+getSuit(x)+".png";
 		}
 		else if(playerID == 2 && playerID != totalPlayer){
 			cout << "Player 2's Turn: " << endl;
@@ -187,6 +194,7 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 			}
 			cout << "Player 2 has "<< getFace(y) <<" of " << getSuit(x) << endl;
 			cout <<"Player 2's Hand Value: " << HandValue[1] << "\n" << endl;
+			temp = getFace(y)+"_of_"+getSuit(x)+".png";
 		}
 		else if(playerID == 3 && playerID != totalPlayer){
 			cout << "Player 3's Turn: " << endl;
@@ -202,6 +210,7 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 			}
 			cout << "Player 3 has "<< getFace(y) <<" of " << getSuit(x) << endl;
 			cout <<"Player 3's Hand Value: " << HandValue[2] << "\n" << endl;
+			temp = getFace(y)+"_of_"+getSuit(x)+".png";
 		}
 		else{
 			cout << "Dealer's Turn: " << endl;
@@ -217,8 +226,11 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 			}
 			cout << "Dealer has "<< getFace(y) <<" of " << getSuit(x) << endl;
 			cout <<"DealerValue: " << HandValue[3] << "\n"<< endl;
+			temp = getFace(y)+"_of_"+getSuit(x)+".png";
 		}	
 		totalTurn++;
+		cout << temp <<endl;
+		return temp;
 	}
 
 /*
@@ -227,7 +239,7 @@ Parameters: int playerID
 Description: uses RNG to generate a "random" next card. Puts that card into either Dealer/Player's hand.
 Returns: void
 */
-	void DealwithIt(int playerID) {
+	string DealwithIt(int playerID) {
 		sleep(1);
 		int value = rand() % 52;
 		int x = value/13;
@@ -236,7 +248,7 @@ Returns: void
 		//use srand and rng to get a random x and y
 		if (Cards[x][y] == 0){
 			Cards[x][y] = playerID;
-			update(x,y, playerID);
+			return update(x,y, playerID);
 		}
 		else{	//duplicate card - reroll 
 			DealwithIt(playerID);
@@ -298,6 +310,36 @@ Returns: void
 
 };
 
+
+using namespace boost::python;
+BOOST_PYTHON_MODULE(bj){
+//using namespace boost::python;
+	class_<BlackJack>("BlackJack", init<int>())
+		.def("DealwithIt", &BlackJack::DealwithIt)
+	;
+}
+
+int main(){
+
+return 0;
+}
+
+/*
+extern "C" {
+	BlackJack* bj_new(int num){ 
+		//srand(time(NULL));
+		return new BlackJack(num);
+		
+	}
+	string DealCard(BlackJack *bj, int num){
+		cout << num << endl;
+		return bj->DealwithIt(0);
+	}
+
+}
+
+
+
 int main(void) {
 	int numPlayers;
 	cout << "Enter the number of players:(2-4) ";
@@ -340,5 +382,5 @@ int main(void) {
 	}
 	bj.soWhoWins();
 }
-
+*/
 
