@@ -153,6 +153,11 @@ Returns: string(Face value/name of card)
 		}
 	}
 
+	int getHandValue(int i){
+		return HandValue[i];
+	}
+
+
 /*
 Method: update
 Parameters: integer x, integer y, int playerID
@@ -177,7 +182,7 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 				cout << "Player 1 busts!" << endl;
 			}
 			cout << "Player 1 has "<< getFace(y) <<" of " << getSuit(x) << endl;
-			cout <<"Player 1's Hand Value: " <<HandValue[0]<< "\n" << endl;
+			cout <<"Player 1's Hand Value: " <<HandValue[0]<< endl;
 			temp = getFace(y)+"_of_"+getSuit(x)+".png";
 		}
 		else if(playerID == 2 && playerID != totalPlayer){
@@ -193,7 +198,7 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 				cout << "Player 2 busts!" << endl;
 			}
 			cout << "Player 2 has "<< getFace(y) <<" of " << getSuit(x) << endl;
-			cout <<"Player 2's Hand Value: " << HandValue[1] << "\n" << endl;
+			cout <<"Player 2's Hand Value: " << HandValue[1] << endl;
 			temp = getFace(y)+"_of_"+getSuit(x)+".png";
 		}
 		else if(playerID == 3 && playerID != totalPlayer){
@@ -209,7 +214,7 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 				cout << "Player 3 busts!" << endl;
 			}
 			cout << "Player 3 has "<< getFace(y) <<" of " << getSuit(x) << endl;
-			cout <<"Player 3's Hand Value: " << HandValue[2] << "\n" << endl;
+			cout <<"Player 3's Hand Value: " << HandValue[2] << endl;
 			temp = getFace(y)+"_of_"+getSuit(x)+".png";
 		}
 		else{
@@ -225,11 +230,11 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 				cout << "Dealer busts!" << endl;
 			}
 			cout << "Dealer has "<< getFace(y) <<" of " << getSuit(x) << endl;
-			cout <<"DealerValue: " << HandValue[3] << "\n"<< endl;
+			cout <<"DealerValue: " << HandValue[3] << endl;
 			temp = getFace(y)+"_of_"+getSuit(x)+".png";
 		}	
 		totalTurn++;
-		cout << temp <<endl;
+		//cout << temp <<endl;
 		return temp;
 	}
 
@@ -316,6 +321,9 @@ BOOST_PYTHON_MODULE(bj){
 //using namespace boost::python;
 	class_<BlackJack>("BlackJack", init<int>())
 		.def("DealwithIt", &BlackJack::DealwithIt)
+		.def("getHandValue", &BlackJack::getHandValue)
+		.def("bustPercentage", &BlackJack::bustPercentage)
+		.def("soWhoWins", &BlackJack::soWhoWins)
 	;
 }
 
