@@ -13,39 +13,24 @@
 //Multiplayer blackjack game(against dealer)
 //Last Edit: Use structs to create objects of each player's hands
 
-
 using namespace std;
 
 struct Player{
 	int HandValue = 0;
 	int numCards = 0;
-	int Hand[2][11] = {{ 0 }};
+	int Hand[2][11] = {{ 0 }};	// max number of cards one can hold is technically 11
 	
 };
-
 
 class BlackJack {
 public:
 	Player *Player1 = new Player;
 	Player *Player2 = new Player;
 	Player *Player3 = new Player;
-	Player *Player4 = new Player;
-	Player *P_Array[4] = {Player1, Player2, Player3, Player4};
+	Player *Dealer = new Player;
+	Player *P_Array[4] = {Dealer, Player1, Player2, Player3};
 
-
-//the maxiumum number of cards one can hold without busting is 11
-//two columns to store a card's suite(diamonds, hearts, clubs, ace) and face value(Ace, 2, 3, ...)
-
-//int Dealer[2][11]={{ 0 }};	//dealer's hand
-//int Player1[2][11]={{ 0 }};	//player 1's hand
-//int Player2[2][11]={{ 0 }};	//player 2's hand
-//int Player3[2][11]={{ 0 }};	//player 3's hand
-
-//HandValue[3] is the dealer's hand
-//int HandValue[4]={ 0 };
-	
 	int totalTurn, totalPlayer;
-//int P1_num, P2_num, P3_num, D_num;	//number of cards in each hand
 
 	int Cards[4][13]={{ 0 }};	//deck of cards
 
@@ -55,10 +40,6 @@ public:
 	BlackJack() {		
 		totalTurn= 0;
 		totalPlayer=2;
-		//P1_num = 0;
-		//P2_num = 0;
-		//P3_num = 0;
-		//D_num=0;
 		srand(time(NULL));
 	}
 
@@ -66,20 +47,16 @@ public:
 	BlackJack(int num_Players) {
 		totalTurn=0;
 		totalPlayer= num_Players;
-		//P1_num=0;
-		//P2_num=0;
-		//P3_num=0;
-		//D_num=0;
 		srand(time(NULL));
 	}
 
 	//no destructor required
 	~BlackJack() {
-	delete Player1;
-	delete Player2;
-	delete Player3;
-	delete Player4;
-	};
+		delete Player1;
+		delete Player2;
+		delete Player3;
+		delete Dealer;
+	}
 
 /*
 Method: getValue
@@ -123,7 +100,6 @@ Returns: string (one of four suite)
 			return "clubs";
 		else return "diamonds";
 	}
-
 
 /*
 Method: getFace
@@ -174,23 +150,14 @@ Returns: string(Face value/name of card)
 				break;
 		}
 	}
-
 	
 	int getHandValue(int playerID){
-		//cout << "playerID : 0 - \t" << P_Array[0]->HandValue << endl;
-		//cout << "playerID : 1 - \t" << P_Array[1]->HandValue << endl;
-		//cout << "playerID : 2 - \t" << P_Array[2]->HandValue << endl;
-		//cout << "playerID : 3 - \t" << P_Array[3]->HandValue << endl;		
-		return P_Array[playerID-1]->HandValue;
+		return P_Array[playerID]->HandValue;
 	}
 
 
 	int getNumCards(int playerID){
-		//cout << "playerID: 0 -\t" << P_Array[0]->numCards << endl;
-		//cout << "playerID: 1 -\t" << P_Array[1]->numCards << endl;
-		//cout << "playerID: 2 -\t" << P_Array[2]->numCards << endl;
-		//cout << "playerID: 3 -\t" << P_Array[3]->numCards << endl;
-		return P_Array[playerID-1]->numCards;
+		return P_Array[playerID]->numCards;
 	}
 
 /*
@@ -200,9 +167,9 @@ Description: helper method, called in DealwithIt().
 Returns: void; updates the player/dealer's hand with the latest draw. 
 */
 	string update(int x, int y, int playerID) {
+		//playerID = 0 --> Dealer's turn
 		//playerID = 1 --> Player 1's turn
 		//PlayerID = ......
-		//playerID = totalPlayer --> Dealer's turn
 		string temp= "";
 		if(playerID == 1){
 			cout << "Player 1's Turn: " << endl;
@@ -254,18 +221,18 @@ Returns: void; updates the player/dealer's hand with the latest draw.
 		}
 		else{
 			cout << "Dealer's Turn: " << endl;
-			Player4->Hand[0][Player4->numCards]=x;
-			Player4->Hand[1][Player4->numCards]=y;
-			Player4->HandValue +=getValue(y);
-			Player4->numCards++;
-			if(Player4->HandValue == 21){
+			Dealer->Hand[0][Dealer->numCards]=x;
+			Dealer->Hand[1][Dealer->numCards]=y;
+			Dealer->HandValue +=getValue(y);
+			Dealer->numCards++;
+			if(Dealer->HandValue == 21){
 				cout << "Dealer wins!" << endl;			
 			}
-			else if(Player4->HandValue > 21){
+			else if(Dealer->HandValue > 21){
 				cout << "Dealer busts!" << endl;
 			}
 			cout << "Dealer has "<< getFace(y) <<" of " << getSuit(x) << endl;
-			cout <<"DealerValue: " << Player4->HandValue << endl;
+			cout <<"DealerValue: " << Dealer->HandValue << endl;
 			temp = getFace(y)+"_of_"+getSuit(x)+".png";
 		}	
 		totalTurn++;
@@ -279,10 +246,10 @@ Description: uses RNG to generate a "random" next card. Puts that card into eith
 Returns: void
 */
 	string DealwithIt(int playerID){
-		//playerID 0 = player 1
-		//playerID 1 = player 2
-		//playerID 2 = player 3
-		//playerID 3 = dealer
+		//playerID 0 = dealer
+		//playerID 1 = player 1
+		//playerID 2 = player 2
+		//playerID 3 = player 3
 		sleep(1);
 		int value = rand() % 52;
 		int x = value/13;
@@ -308,21 +275,22 @@ Returns: void
 		int x[4];
 		for(int i=0; i<4; i++)
 		{
+			cout << i << ": " << P_Array[i]->HandValue << endl;
 			if(P_Array[i]->HandValue<=21)
 				x[i]=P_Array[i]->HandValue;
 			else 
-				x[0]=0;
+				x[i]=0;
 		}
-		if(x[3]==0)	//dealer bust
+		if(x[0]==0)	//dealer bust
 			cout << "Dealer has busted! Players win!" << endl;
-		else if(x[3] >= x[0] && 
-			x[3] >= x[1] && x[3] >= x[2]){
+		else if(x[0] >= x[1] && 
+			x[0] >= x[2] && x[0] >= x[3]){
 			cout << "Dealer wins!" << endl;
 		}
 		else{
-			for(int i=0; i<totalPlayer-1; i++){
-				if(x[i] > x[3] && x[i] != 0)
-					cout << "Player " << i+1 << " wins!" << endl;
+			for(int i=1; i<totalPlayer; i++){
+				if(x[i] > x[0] && x[i] != 0)
+					cout << "Player " << i << " wins!" << endl;
 			}	
 		}
 	}
@@ -335,10 +303,10 @@ Returns: void
 */
 	void bustPercentage(int playerID){
 		int p_counter = 0;
-		if(P_Array[playerID-1]->HandValue==21)
+		if(P_Array[playerID]->HandValue==21)
 			cout <<"Percentage of busting: 100%" << endl;
-		else if(P_Array[playerID-1]->HandValue > 11){
-			int magic_num = 21 - P_Array[playerID-1]->HandValue;
+		else if(P_Array[playerID]->HandValue > 11){
+			int magic_num = 21 - P_Array[playerID]->HandValue;
 			for(int j =0; j < 4 ; j++){
 				for(int i=0; i<magic_num; i++){
 					if(Cards[j][i]==0)
@@ -351,42 +319,22 @@ Returns: void
 		else
 			cout << "no chance of busting! I recommend that you take another card" << endl;
 	}
-
 };
 
 
 using namespace boost::python;
 BOOST_PYTHON_MODULE(bj){
-//using namespace boost::python;
 	class_<BlackJack>("BlackJack", init<int>())
 		.def("DealwithIt", &BlackJack::DealwithIt)
 		.def("getHandValue", &BlackJack::getHandValue)
 		.def("bustPercentage", &BlackJack::bustPercentage)
 		.def("soWhoWins", &BlackJack::soWhoWins)
 		.def("getNumCards", &BlackJack::getNumCards)
+		//.def()
 	;
 }
 
-int main(){
-
-return 0;
-}
-
 /*
-extern "C" {
-	BlackJack* bj_new(int num){ 
-		//srand(time(NULL));
-		return new BlackJack(num);
-		
-	}
-	string DealCard(BlackJack *bj, int num){
-		cout << num << endl;
-		return bj->DealwithIt(0);
-	}
-
-}
-
-
 
 int main(void) {
 	int numPlayers;
